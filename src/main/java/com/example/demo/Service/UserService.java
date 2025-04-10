@@ -27,7 +27,7 @@ public class UserService {
         if (opUser.isPresent()) {
             User user = opUser.get();
             if(BCrypt.checkpw(dto.getPassword(), user.getPassword()));
-         return     jwtService.generateToken(user.getUsername());
+         return jwtService.generateToken(user.getUsername());
         }
         return null;
     }
