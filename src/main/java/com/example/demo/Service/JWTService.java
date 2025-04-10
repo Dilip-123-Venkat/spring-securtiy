@@ -1,11 +1,9 @@
 package com.example.demo.Service;
 
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,36 +14,34 @@ import java.util.Date;
 public class JWTService {
 
     @Value("${jwt.key}")
-    private String algorithKey;
+    private String algorithmKey;
 
     @Value("${jwt.issuer}")
     private String issuer;
 
     @Value("${jwt.expiry}")
-    private int expiry;
-    @Autowired
-    Algorithm algorithm;
+    private int expiry; // in seconds
+
+    private Algorithm algorithm;
 
     @PostConstruct
     public void postConstruct() throws UnsupportedEncodingException {
-        algorithm = Algorithm.HMAC256(algorithKey);
+        algorithm = Algorithm.HMAC256(algorithmKey);
     }
 
     public String generateToken(String username) {
-        return JWT.create().withClaim("username", username)
-                .withExpiresAt(new Date(System.currentTimeMillis() + expiry))
+        return JWT.create()
+                .withClaim("username", username)
+                .withExpiresAt(new Date(System.currentTimeMillis() + expiry * 1000L)) // convert to ms
                 .withIssuer(issuer)
                 .sign(algorithm);
     }
 
     public String getUsername(String token) {
-        DecodedJWT decodedToken = JWT.require(algorithm)
+        DecodedJWT decodedJWT = JWT.require(algorithm)
                 .withIssuer(issuer)
                 .build()
                 .verify(token);
-        return decodedToken.getClaim("username").asString();
-
-
+        return decodedJWT.getClaim("username").asString();
     }
-
 }

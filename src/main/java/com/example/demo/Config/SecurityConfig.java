@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
@@ -18,17 +19,17 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable().cors().disable();
-
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/signup", "/api/v1/auth/signin").permitAll()
-                .anyRequest().authenticated()
-        );
-
-        http.addFilterBefore(jwtFilter, AuthenticationFilter.class);
+        http.csrf().disable()
+                .cors().disable()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/v1/auth/signup", "/api/v1/auth/usersign").permitAll() // ✅ Fix this!
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // ✅ Fix: use correct filter class
 
         return http.build();
     }
+
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
