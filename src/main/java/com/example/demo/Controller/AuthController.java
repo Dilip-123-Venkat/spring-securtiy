@@ -24,8 +24,8 @@ public class AuthController {
     private UserService userService;
 
     // ✅ Signup Endpoint
-    @PostMapping("/signup")
-    public ResponseEntity<?> createUser(@RequestBody User user) {
+    @PostMapping("/content-manager-signup")
+    public ResponseEntity<?> createContentManagerUser(@RequestBody User user) {
         Optional<User> opUsername = userRepository.findByUsername(user.getUsername());
         if (opUsername.isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
@@ -38,6 +38,27 @@ public class AuthController {
 
         String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12));
         user.setPassword(hashedPassword);
+        user.setRole("ROLE_CONTENTMANAGER");
+        userRepository.save(user);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully");
+    }
+
+    @PostMapping("/blog-manager-signup")
+    public ResponseEntity<?> createBlogManagerUser(@RequestBody User user) {
+        Optional<User> opUsername = userRepository.findByUsername(user.getUsername());
+        if (opUsername.isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
+        }
+
+        Optional<User> opEmailId = userRepository.findByEmailId(user.getEmailId());
+        if (opEmailId.isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email ID already exists");
+        }
+
+        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12));
+        user.setPassword(hashedPassword);
+        user.setRole("ROLE_BLOGMANAGER");
         userRepository.save(user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully");
@@ -58,6 +79,7 @@ public class AuthController {
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
     }
+
     @GetMapping("/print")
     public String addCars() {
         return "added";
