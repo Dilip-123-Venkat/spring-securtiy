@@ -1,7 +1,5 @@
 package com.example.demo.Controller;
-//abc
-// I am don
-//ook
+
 import com.example.demo.PayLoad.JWTTokenDto;
 import com.example.demo.PayLoad.LoginDto;
 import com.example.demo.Repositary.UserRepository;
@@ -18,46 +16,50 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
+
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private UserService userService;
 
-//    @Autowired
-//    public AuthController(UserRepository userRepository, UserService userService) {
-//        this.userRepository = userRepository;
-//        this.userService = userService;
-//    }
-
-    // Signup Endpoint
+    // ✅ Signup Endpoint
     @PostMapping("/signup")
     public ResponseEntity<?> createUser(@RequestBody User user) {
         Optional<User> opUsername = userRepository.findByUsername(user.getUsername());
         if (opUsername.isPresent()) {
-            return new ResponseEntity<>("Username already exists", HttpStatus.CONFLICT);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
         }
 
         Optional<User> opEmailId = userRepository.findByEmailId(user.getEmailId());
         if (opEmailId.isPresent()) {
-            return new ResponseEntity<>("Email ID already exists", HttpStatus.CONFLICT);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email ID already exists");
         }
-        String hashpw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12));
-        user.setPassword(hashpw);
 
+        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12));
+        user.setPassword(hashedPassword);
         userRepository.save(user);
-        return new ResponseEntity<>("User created successfully", HttpStatus.CREATED);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully");
     }
 
+    // ✅ Login Endpoint
     @PostMapping("/usersign")
     public ResponseEntity<?> userSignIn(@RequestBody LoginDto dto) {
         String jwtToken = userService.verifyLogin(dto);
-        if (jwtToken != null) {
 
+        if (jwtToken != null) {
             JWTTokenDto tokenDto = new JWTTokenDto();
             tokenDto.setToken(jwtToken);
-            tokenDto.setTokenType("JWT");
-            return new ResponseEntity<>(tokenDto,HttpStatus.CREATED);
+            tokenDto.setTokenType("Bearer"); // ✅ Use "Bearer" to match Authorization header format
+
+            return ResponseEntity.ok(tokenDto); // ✅ 200 OK is better for login success
         }
-        return new ResponseEntity<>("Invalid",HttpStatus.INTERNAL_SERVER_ERROR);
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+    }
+    @GetMapping("/print")
+    public String addCars() {
+        return "added";
     }
 }
