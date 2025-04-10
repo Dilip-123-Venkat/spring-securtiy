@@ -23,6 +23,9 @@ public class User {
     @Column(name = "password", nullable = false, length = 1000)
     private String password;
 
+    @Column(name = "ROLE", nullable = false, length = 25)
+    private String role;
+
 }
 
 
